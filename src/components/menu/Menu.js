@@ -23,7 +23,7 @@ const Menu = observer(() => {
         }
     }
     return (
-        <Flex w="400px" bg="secondary.300" direction="column" h="100vh">
+        <Flex w="400px" bg="secondary.300" direction="column" h="100vh" zIndex={4}>
             <Flex p={6} py={5} align="center" borderBottomWidth="1px">
                 <Text>Your Cart</Text>
                 {cartStore.cart.size > 0 && (
