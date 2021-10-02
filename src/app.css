@@ -1,0 +1,14 @@
+.mask-img {
+    -webkit-mask-image:-webkit-gradient(linear, left top, left bottom, from(rgba(0,0,0,1)), to(rgba(0,0,0,0)));
+    mask-image: linear-gradient(180deg, rgba(0, 0, 0, 1)  ,1px,rgba(0,0,0,0) 130px, rgba(0,0,0,0) 100% );
+    transform: scale(.9);
+}
+
+.selector {
+    user-drag: none;
+    -webkit-user-drag: none;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}
