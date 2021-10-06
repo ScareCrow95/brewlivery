@@ -20,7 +20,6 @@ const BeerPreview = observer(() => {
     function getTitleElements() {
         const split = selected?.name.split(' ')
         const first = split.shift()
-        console.log(first)
         return [split.join(' '), first]
     }
 

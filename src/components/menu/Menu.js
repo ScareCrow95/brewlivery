@@ -45,7 +45,7 @@ const Menu = observer(() => {
                         })}
                         <Box mt={3} />
                         <Flex justify="flex-end">
-                            <Button bg="primary.100" size="sm" m={3} mt={0}>
+                            <Button bg="primary.100" size="sm" m={3} mt={0} onClick={() => (uiStore.checkout = true)}>
                                 Checkout
                             </Button>
                         </Flex>

@@ -10,6 +10,8 @@ export class UIStore {
 
     selectedId = 'can1'
 
+    checkout = false
+
     get selected() {
         return this.root.inventoryStore.inventory.get(this.selectedId)
     }
