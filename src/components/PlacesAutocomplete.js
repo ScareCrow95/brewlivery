@@ -29,6 +29,7 @@ const PlacesAutocomplete = ({ onSelect }) => {
                 .then((results) => getLatLng(results[0]))
                 .then(({ lat, lng }) => {
                     onSelect?.({ lat, lng })
+                    console.log('📍 Coordinates: ', { lat, lng })
                 })
                 .catch((error) => {
                     console.log('😱 Error: ', error)
