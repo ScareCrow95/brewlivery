@@ -11,7 +11,7 @@ const Menu = observer(() => {
         if (cartStore.cart.size) {
             return (
                 <Text color="white" fontSize="xl" fontWeight="bold" mr={4}>
-                    {cartStore.totalCost}
+                    ${cartStore.totalCost}
                 </Text>
             )
         } else {
@@ -28,7 +28,7 @@ const Menu = observer(() => {
                 <Text>Your Cart</Text>
                 {cartStore.cart.size > 0 && (
                     <Center ml={1} boxSize={4} bg="red" mt={-4} fontSize="xs" fontWeight="bold" rounded="full">
-                        <Text ml="-1px" mt="1px">
+                        <Text ml="1px" mt="1px">
                             {cartStore.cart.size}
                         </Text>
                     </Center>

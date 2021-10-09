@@ -70,6 +70,6 @@ export class CartStore {
         this.array.forEach((x) => {
             total += x.count * x.inventory._cost
         })
-        return '$' + roundTwoDecimal(total)
+        return roundTwoDecimal(total)
     }
 }

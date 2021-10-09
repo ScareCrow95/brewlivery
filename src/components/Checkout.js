@@ -19,15 +19,19 @@ import {
     ModalHeader,
     ModalOverlay,
     Button,
+    Spacer,
 } from '@chakra-ui/react'
 import PlacesAutocomplete from './PlacesAutocomplete'
 import { observer } from 'mobx-react-lite'
 import { IoBeer } from 'react-icons/io5'
 import { FaMapMarkerAlt } from 'react-icons/fa'
 import { useStores } from '../store/root'
+import CartItem from './menu/CartItem'
 const palefire = { lat: 38.4481179, lng: -78.8721451 }
+const maxDistance = 2000
+
 const Checkout = observer(() => {
-    const { uiStore } = useStores()
+    const { uiStore, cartStore } = useStores()
     const [map, setMap] = useState({
         loaded: false,
         map: null,
@@ -38,6 +42,12 @@ const Checkout = observer(() => {
     const [dropGPS, setDrop] = useState(null)
     const [dragging, setDragging] = useState(false)
     const [far, setFar] = useState(false)
+    const [distance, setDistance] = useState(0)
+    const [center, setCenter] = useState(palefire)
+    const [zoom, setZoom] = useState(15)
+
+    const [screen, setScreen] = useState(0)
+
     const PalefireIcon = () => {
         return (
             <Flex direction="column" align="center" mt="-50px">
@@ -67,9 +77,6 @@ const Checkout = observer(() => {
             </Flex>
         )
     }
-
-    const [center, setCenter] = useState(palefire)
-    const [zoom, setZoom] = useState(15)
 
     function createPath() {
         if (dropGPS) {
@@ -104,7 +111,7 @@ const Checkout = observer(() => {
                 fillOpacity: 0.25,
                 strokeWeight: 2,
                 center: palefire,
-                radius: 1000,
+                radius: maxDistance,
             })
         } else if (map.loaded && polyCircle.current && !far && polyCircle.current.strokeOpacity !== 0) {
             polyCircle.current.setOptions({
@@ -123,411 +130,496 @@ const Checkout = observer(() => {
     }
 
     return (
-        <Modal isOpen={uiStore.checkout} onClose={() => (uiStore.checkout = false)} size="6xl">
+        <Modal isOpen={uiStore.checkout} onClose={() => (uiStore.checkout = false)} size={screen === 0 ? '6xl' : '4xl'}>
             <ModalOverlay bg="rgba(0,0,0,.8)" />
             <ModalContent bg="secondary.200">
                 <ModalHeader borderBottom="1px" borderColor="secondary.100">
-                    <Text>Pick drop off</Text>
-                    <ModalCloseButton />
+                    <Flex align="center">
+                        <Text>{screen === 0 ? 'Pick drop off' : 'Order Details'}</Text>
+                        <Spacer />
+                        {dropGPS && !far && (
+                            <Text fontSize="md" fontWeight="normal" mr={10}>
+                                <Text
+                                    as="span"
+                                    bg="primary.100"
+                                    color="secondary.300"
+                                    px={2}
+                                    rounded="full"
+                                    fontWeight="bold"
+                                    ml={2}
+                                >
+                                    ETA
+                                </Text>{' '}
+                                {5 + Math.round(distance / 100)} mins
+                            </Text>
+                        )}
+                        <ModalCloseButton size="lg" mt={1} />
+                    </Flex>
                 </ModalHeader>
                 <ModalBody>
-                    <Flex h="500px" mt={4} overflow="hidden" direction="column" position="relative">
-                        <PlacesAutocomplete
-                            onSelect={(result) => {
-                                setCenter(result)
-                                setDrop(result)
-                                setZoom(16)
-                                if (
-                                    getDistance(
-                                        { latitude: palefire.lat, longitude: palefire.lng },
-                                        { latitude: result.lat, longitude: result.lng },
-                                    ) > 200
-                                ) {
-                                    if (!far) setFar(true)
-                                } else {
-                                    if (far) setFar(false)
-                                }
-                            }}
-                        />
-                        <Flex rounded={8} flex={1} overflow="hidden" position="absolute" h="90%" w="100%" mt="50px">
-                            <GoogleMapReact
-                                yesIWantToUseGoogleMapApiInternals
-                                bootstrapURLKeys={{ key: 'AIzaSyDBaop0mN9naU3tMcWyNLjzHErLbTl9g8E' }}
-                                defaultCenter={center}
-                                center={center}
-                                defaultZoom={zoom}
-                                zoom={zoom}
-                                onChange={({ center, zoom }) => {
-                                    if (center && center.lat) {
-                                        setCenter(center)
-                                    }
-                                    if (zoom) {
-                                        setZoom(zoom)
-                                    }
-                                }}
-                                draggable={!dragging}
-                                onChildMouseDown={() => {
-                                    setDragging(true)
-                                }}
-                                onChildMouseUp={() => setDragging(false)}
-                                onChildMouseMove={(key, childProps, mouse) => {
-                                    if (key === 'dropoff') {
-                                        setDrop({ lat: mouse.lat, lng: mouse.lng })
-                                        if (
-                                            getDistance(
-                                                { latitude: palefire.lat, longitude: palefire.lng },
-                                                { latitude: mouse.lat, longitude: mouse.lng },
-                                            ) > 1000
-                                        ) {
-                                            if (!far) {
-                                                setFar(true)
-                                            }
+                    <Flex mt={4} overflow="hidden" direction="column" position="relative">
+                        {screen === 0 && (
+                            <Flex direction="column" h="500px">
+                                <PlacesAutocomplete
+                                    onSelect={(result) => {
+                                        setCenter(result)
+                                        setDrop(result)
+                                        setZoom(16)
+                                        const dist = getDistance(
+                                            { latitude: palefire.lat, longitude: palefire.lng },
+                                            { latitude: result.lat, longitude: result.lng },
+                                        )
+                                        setDistance(dist)
+                                        if (dist > maxDistance) {
+                                            if (!far) setFar(true)
                                         } else {
-                                            if (far) {
-                                                setFar(false)
-                                            }
+                                            if (far) setFar(false)
                                         }
-                                    }
-                                }}
-                                options={{
-                                    styles: [
-                                        {
-                                            featureType: 'all',
-                                            elementType: 'geometry',
-                                            stylers: [
+                                    }}
+                                />
+                                <Flex
+                                    rounded={8}
+                                    flex={1}
+                                    overflow="hidden"
+                                    position="absolute"
+                                    h="90%"
+                                    w="100%"
+                                    mt="50px"
+                                >
+                                    <GoogleMapReact
+                                        yesIWantToUseGoogleMapApiInternals
+                                        bootstrapURLKeys={{ key: 'AIzaSyDBaop0mN9naU3tMcWyNLjzHErLbTl9g8E' }}
+                                        defaultCenter={center}
+                                        center={center}
+                                        defaultZoom={zoom}
+                                        zoom={zoom}
+                                        onChange={({ center, zoom }) => {
+                                            if (center && center.lat) {
+                                                setCenter(center)
+                                            }
+                                            if (zoom) {
+                                                setZoom(zoom)
+                                            }
+                                        }}
+                                        draggable={!dragging}
+                                        onChildMouseDown={() => {
+                                            setDragging(true)
+                                        }}
+                                        onChildMouseUp={() => setDragging(false)}
+                                        onChildMouseMove={(key, childProps, mouse) => {
+                                            if (key === 'dropoff') {
+                                                setDrop({ lat: mouse.lat, lng: mouse.lng })
+                                                const dist = getDistance(
+                                                    { latitude: palefire.lat, longitude: palefire.lng },
+                                                    { latitude: mouse.lat, longitude: mouse.lng },
+                                                )
+                                                setDistance(dist)
+                                                // console.log(dist)
+                                                console.log(dist > maxDistance)
+                                                if (dist > maxDistance) {
+                                                    if (!far) {
+                                                        console.log('set far')
+                                                        setFar(true)
+                                                    }
+                                                } else {
+                                                    if (far) {
+                                                        console.log('set close')
+                                                        setFar(false)
+                                                    }
+                                                }
+                                            }
+                                        }}
+                                        options={{
+                                            styles: [
                                                 {
-                                                    color: '#262626',
+                                                    featureType: 'all',
+                                                    elementType: 'geometry',
+                                                    stylers: [
+                                                        {
+                                                            color: '#262626',
+                                                        },
+                                                    ],
+                                                },
+                                                {
+                                                    featureType: 'all',
+                                                    elementType: 'labels.text.fill',
+                                                    stylers: [
+                                                        {
+                                                            color: '#746855',
+                                                        },
+                                                    ],
+                                                },
+                                                {
+                                                    featureType: 'all',
+                                                    elementType: 'labels.text.stroke',
+                                                    stylers: [
+                                                        {
+                                                            color: '#242f3e',
+                                                        },
+                                                    ],
+                                                },
+                                                {
+                                                    featureType: 'administrative.locality',
+                                                    elementType: 'labels.text.fill',
+                                                    stylers: [
+                                                        {
+                                                            color: '#d59563',
+                                                        },
+                                                    ],
+                                                },
+                                                {
+                                                    featureType: 'landscape.man_made',
+                                                    elementType: 'geometry.fill',
+                                                    stylers: [
+                                                        {
+                                                            visibility: 'on',
+                                                        },
+                                                        {
+                                                            color: '#2d2d2d',
+                                                        },
+                                                    ],
+                                                },
+                                                {
+                                                    featureType: 'landscape.man_made',
+                                                    elementType: 'geometry.stroke',
+                                                    stylers: [
+                                                        {
+                                                            visibility: 'off',
+                                                        },
+                                                        {
+                                                            hue: '#ff0000',
+                                                        },
+                                                    ],
+                                                },
+                                                {
+                                                    featureType: 'landscape.man_made',
+                                                    elementType: 'labels',
+                                                    stylers: [
+                                                        {
+                                                            visibility: 'off',
+                                                        },
+                                                        {
+                                                            hue: '#00ff24',
+                                                        },
+                                                    ],
+                                                },
+                                                {
+                                                    featureType: 'landscape.man_made',
+                                                    elementType: 'labels.text',
+                                                    stylers: [
+                                                        {
+                                                            visibility: 'on',
+                                                        },
+                                                    ],
+                                                },
+                                                {
+                                                    featureType: 'landscape.man_made',
+                                                    elementType: 'labels.text.fill',
+                                                    stylers: [
+                                                        {
+                                                            visibility: 'on',
+                                                        },
+                                                        {
+                                                            color: '#ffffff',
+                                                        },
+                                                    ],
+                                                },
+                                                {
+                                                    featureType: 'landscape.man_made',
+                                                    elementType: 'labels.text.stroke',
+                                                    stylers: [
+                                                        {
+                                                            hue: '#76ff00',
+                                                        },
+                                                        {
+                                                            visibility: 'off',
+                                                        },
+                                                    ],
+                                                },
+                                                {
+                                                    featureType: 'landscape.man_made',
+                                                    elementType: 'labels.icon',
+                                                    stylers: [
+                                                        {
+                                                            visibility: 'off',
+                                                        },
+                                                    ],
+                                                },
+                                                {
+                                                    featureType: 'landscape.natural',
+                                                    elementType: 'all',
+                                                    stylers: [
+                                                        {
+                                                            visibility: 'off',
+                                                        },
+                                                    ],
+                                                },
+                                                {
+                                                    featureType: 'landscape.natural',
+                                                    elementType: 'geometry',
+                                                    stylers: [
+                                                        {
+                                                            visibility: 'on',
+                                                        },
+                                                    ],
+                                                },
+                                                {
+                                                    featureType: 'landscape.natural',
+                                                    elementType: 'geometry.fill',
+                                                    stylers: [
+                                                        {
+                                                            visibility: 'on',
+                                                        },
+                                                        {
+                                                            hue: '#00fffb',
+                                                        },
+                                                    ],
+                                                },
+                                                {
+                                                    featureType: 'landscape.natural.landcover',
+                                                    elementType: 'all',
+                                                    stylers: [
+                                                        {
+                                                            visibility: 'off',
+                                                        },
+                                                        {
+                                                            hue: '#ff00df',
+                                                        },
+                                                    ],
+                                                },
+                                                {
+                                                    featureType: 'landscape.natural.landcover',
+                                                    elementType: 'geometry.fill',
+                                                    stylers: [
+                                                        {
+                                                            visibility: 'on',
+                                                        },
+                                                    ],
+                                                },
+                                                {
+                                                    featureType: 'landscape.natural.landcover',
+                                                    elementType: 'geometry.stroke',
+                                                    stylers: [
+                                                        {
+                                                            visibility: 'on',
+                                                        },
+                                                    ],
+                                                },
+                                                {
+                                                    featureType: 'landscape.natural.landcover',
+                                                    elementType: 'labels',
+                                                    stylers: [
+                                                        {
+                                                            visibility: 'on',
+                                                        },
+                                                        {
+                                                            hue: '#0024ff',
+                                                        },
+                                                    ],
+                                                },
+                                                {
+                                                    featureType: 'landscape.natural.landcover',
+                                                    elementType: 'labels.text.fill',
+                                                    stylers: [
+                                                        {
+                                                            visibility: 'on',
+                                                        },
+                                                    ],
+                                                },
+                                                {
+                                                    featureType: 'poi',
+                                                    elementType: 'labels.text.fill',
+                                                    stylers: [
+                                                        {
+                                                            color: '#d59563',
+                                                        },
+                                                    ],
+                                                },
+                                                {
+                                                    featureType: 'poi.park',
+                                                    elementType: 'geometry',
+                                                    stylers: [
+                                                        {
+                                                            color: '#263c3f',
+                                                        },
+                                                    ],
+                                                },
+                                                {
+                                                    featureType: 'poi.park',
+                                                    elementType: 'labels.text.fill',
+                                                    stylers: [
+                                                        {
+                                                            color: '#6b9a76',
+                                                        },
+                                                    ],
+                                                },
+                                                {
+                                                    featureType: 'road',
+                                                    elementType: 'geometry',
+                                                    stylers: [
+                                                        {
+                                                            color: '#38414e',
+                                                        },
+                                                    ],
+                                                },
+                                                {
+                                                    featureType: 'road',
+                                                    elementType: 'geometry.stroke',
+                                                    stylers: [
+                                                        {
+                                                            color: '#212a37',
+                                                        },
+                                                    ],
+                                                },
+                                                {
+                                                    featureType: 'road',
+                                                    elementType: 'labels.text.fill',
+                                                    stylers: [
+                                                        {
+                                                            color: '#9ca5b3',
+                                                        },
+                                                    ],
+                                                },
+                                                {
+                                                    featureType: 'road.highway',
+                                                    elementType: 'geometry',
+                                                    stylers: [
+                                                        {
+                                                            color: '#746855',
+                                                        },
+                                                    ],
+                                                },
+                                                {
+                                                    featureType: 'road.highway',
+                                                    elementType: 'geometry.stroke',
+                                                    stylers: [
+                                                        {
+                                                            color: '#1f2835',
+                                                        },
+                                                    ],
+                                                },
+                                                {
+                                                    featureType: 'road.highway',
+                                                    elementType: 'labels.text.fill',
+                                                    stylers: [
+                                                        {
+                                                            color: '#f3d19c',
+                                                        },
+                                                    ],
+                                                },
+                                                {
+                                                    featureType: 'transit',
+                                                    elementType: 'geometry',
+                                                    stylers: [
+                                                        {
+                                                            color: '#2f3948',
+                                                        },
+                                                    ],
+                                                },
+                                                {
+                                                    featureType: 'transit.station',
+                                                    elementType: 'labels.text.fill',
+                                                    stylers: [
+                                                        {
+                                                            color: '#d59563',
+                                                        },
+                                                    ],
+                                                },
+                                                {
+                                                    featureType: 'water',
+                                                    elementType: 'geometry',
+                                                    stylers: [
+                                                        {
+                                                            color: '#17263c',
+                                                        },
+                                                    ],
+                                                },
+                                                {
+                                                    featureType: 'water',
+                                                    elementType: 'labels.text.fill',
+                                                    stylers: [
+                                                        {
+                                                            color: '#515c6d',
+                                                        },
+                                                    ],
+                                                },
+                                                {
+                                                    featureType: 'water',
+                                                    elementType: 'labels.text.stroke',
+                                                    stylers: [
+                                                        {
+                                                            color: '#17263c',
+                                                        },
+                                                    ],
                                                 },
                                             ],
-                                        },
-                                        {
-                                            featureType: 'all',
-                                            elementType: 'labels.text.fill',
-                                            stylers: [
-                                                {
-                                                    color: '#746855',
-                                                },
-                                            ],
-                                        },
-                                        {
-                                            featureType: 'all',
-                                            elementType: 'labels.text.stroke',
-                                            stylers: [
-                                                {
-                                                    color: '#242f3e',
-                                                },
-                                            ],
-                                        },
-                                        {
-                                            featureType: 'administrative.locality',
-                                            elementType: 'labels.text.fill',
-                                            stylers: [
-                                                {
-                                                    color: '#d59563',
-                                                },
-                                            ],
-                                        },
-                                        {
-                                            featureType: 'landscape.man_made',
-                                            elementType: 'geometry.fill',
-                                            stylers: [
-                                                {
-                                                    visibility: 'on',
-                                                },
-                                                {
-                                                    color: '#2d2d2d',
-                                                },
-                                            ],
-                                        },
-                                        {
-                                            featureType: 'landscape.man_made',
-                                            elementType: 'geometry.stroke',
-                                            stylers: [
-                                                {
-                                                    visibility: 'off',
-                                                },
-                                                {
-                                                    hue: '#ff0000',
-                                                },
-                                            ],
-                                        },
-                                        {
-                                            featureType: 'landscape.man_made',
-                                            elementType: 'labels',
-                                            stylers: [
-                                                {
-                                                    visibility: 'off',
-                                                },
-                                                {
-                                                    hue: '#00ff24',
-                                                },
-                                            ],
-                                        },
-                                        {
-                                            featureType: 'landscape.man_made',
-                                            elementType: 'labels.text',
-                                            stylers: [
-                                                {
-                                                    visibility: 'on',
-                                                },
-                                            ],
-                                        },
-                                        {
-                                            featureType: 'landscape.man_made',
-                                            elementType: 'labels.text.fill',
-                                            stylers: [
-                                                {
-                                                    visibility: 'on',
-                                                },
-                                                {
-                                                    color: '#ffffff',
-                                                },
-                                            ],
-                                        },
-                                        {
-                                            featureType: 'landscape.man_made',
-                                            elementType: 'labels.text.stroke',
-                                            stylers: [
-                                                {
-                                                    hue: '#76ff00',
-                                                },
-                                                {
-                                                    visibility: 'off',
-                                                },
-                                            ],
-                                        },
-                                        {
-                                            featureType: 'landscape.man_made',
-                                            elementType: 'labels.icon',
-                                            stylers: [
-                                                {
-                                                    visibility: 'off',
-                                                },
-                                            ],
-                                        },
-                                        {
-                                            featureType: 'landscape.natural',
-                                            elementType: 'all',
-                                            stylers: [
-                                                {
-                                                    visibility: 'off',
-                                                },
-                                            ],
-                                        },
-                                        {
-                                            featureType: 'landscape.natural',
-                                            elementType: 'geometry',
-                                            stylers: [
-                                                {
-                                                    visibility: 'on',
-                                                },
-                                            ],
-                                        },
-                                        {
-                                            featureType: 'landscape.natural',
-                                            elementType: 'geometry.fill',
-                                            stylers: [
-                                                {
-                                                    visibility: 'on',
-                                                },
-                                                {
-                                                    hue: '#00fffb',
-                                                },
-                                            ],
-                                        },
-                                        {
-                                            featureType: 'landscape.natural.landcover',
-                                            elementType: 'all',
-                                            stylers: [
-                                                {
-                                                    visibility: 'off',
-                                                },
-                                                {
-                                                    hue: '#ff00df',
-                                                },
-                                            ],
-                                        },
-                                        {
-                                            featureType: 'landscape.natural.landcover',
-                                            elementType: 'geometry.fill',
-                                            stylers: [
-                                                {
-                                                    visibility: 'on',
-                                                },
-                                            ],
-                                        },
-                                        {
-                                            featureType: 'landscape.natural.landcover',
-                                            elementType: 'geometry.stroke',
-                                            stylers: [
-                                                {
-                                                    visibility: 'on',
-                                                },
-                                            ],
-                                        },
-                                        {
-                                            featureType: 'landscape.natural.landcover',
-                                            elementType: 'labels',
-                                            stylers: [
-                                                {
-                                                    visibility: 'on',
-                                                },
-                                                {
-                                                    hue: '#0024ff',
-                                                },
-                                            ],
-                                        },
-                                        {
-                                            featureType: 'landscape.natural.landcover',
-                                            elementType: 'labels.text.fill',
-                                            stylers: [
-                                                {
-                                                    visibility: 'on',
-                                                },
-                                            ],
-                                        },
-                                        {
-                                            featureType: 'poi',
-                                            elementType: 'labels.text.fill',
-                                            stylers: [
-                                                {
-                                                    color: '#d59563',
-                                                },
-                                            ],
-                                        },
-                                        {
-                                            featureType: 'poi.park',
-                                            elementType: 'geometry',
-                                            stylers: [
-                                                {
-                                                    color: '#263c3f',
-                                                },
-                                            ],
-                                        },
-                                        {
-                                            featureType: 'poi.park',
-                                            elementType: 'labels.text.fill',
-                                            stylers: [
-                                                {
-                                                    color: '#6b9a76',
-                                                },
-                                            ],
-                                        },
-                                        {
-                                            featureType: 'road',
-                                            elementType: 'geometry',
-                                            stylers: [
-                                                {
-                                                    color: '#38414e',
-                                                },
-                                            ],
-                                        },
-                                        {
-                                            featureType: 'road',
-                                            elementType: 'geometry.stroke',
-                                            stylers: [
-                                                {
-                                                    color: '#212a37',
-                                                },
-                                            ],
-                                        },
-                                        {
-                                            featureType: 'road',
-                                            elementType: 'labels.text.fill',
-                                            stylers: [
-                                                {
-                                                    color: '#9ca5b3',
-                                                },
-                                            ],
-                                        },
-                                        {
-                                            featureType: 'road.highway',
-                                            elementType: 'geometry',
-                                            stylers: [
-                                                {
-                                                    color: '#746855',
-                                                },
-                                            ],
-                                        },
-                                        {
-                                            featureType: 'road.highway',
-                                            elementType: 'geometry.stroke',
-                                            stylers: [
-                                                {
-                                                    color: '#1f2835',
-                                                },
-                                            ],
-                                        },
-                                        {
-                                            featureType: 'road.highway',
-                                            elementType: 'labels.text.fill',
-                                            stylers: [
-                                                {
-                                                    color: '#f3d19c',
-                                                },
-                                            ],
-                                        },
-                                        {
-                                            featureType: 'transit',
-                                            elementType: 'geometry',
-                                            stylers: [
-                                                {
-                                                    color: '#2f3948',
-                                                },
-                                            ],
-                                        },
-                                        {
-                                            featureType: 'transit.station',
-                                            elementType: 'labels.text.fill',
-                                            stylers: [
-                                                {
-                                                    color: '#d59563',
-                                                },
-                                            ],
-                                        },
-                                        {
-                                            featureType: 'water',
-                                            elementType: 'geometry',
-                                            stylers: [
-                                                {
-                                                    color: '#17263c',
-                                                },
-                                            ],
-                                        },
-                                        {
-                                            featureType: 'water',
-                                            elementType: 'labels.text.fill',
-                                            stylers: [
-                                                {
-                                                    color: '#515c6d',
-                                                },
-                                            ],
-                                        },
-                                        {
-                                            featureType: 'water',
-                                            elementType: 'labels.text.stroke',
-                                            stylers: [
-                                                {
-                                                    color: '#17263c',
-                                                },
-                                            ],
-                                        },
-                                    ],
-                                }}
-                                onGoogleApiLoaded={({ map, maps }) => setMap({ loaded: true, maps, map })}
-                            >
-                                <PalefireIcon lat={38.4481179} lng={-78.8721451} />
-                                {createPath()}
-                                {createCircle()}
-                                {dropGPS && (
-                                    <DropoffIcon key="dropoff" lat={dropGPS.lat} lng={dropGPS.lng} draggable={true} />
-                                )}
-                            </GoogleMapReact>
-                        </Flex>
+                                        }}
+                                        onGoogleApiLoaded={({ map, maps }) => setMap({ loaded: true, maps, map })}
+                                    >
+                                        <PalefireIcon lat={38.4481179} lng={-78.8721451} />
+                                        {createPath()}
+                                        {createCircle()}
+                                        {dropGPS && (
+                                            <DropoffIcon
+                                                key="dropoff"
+                                                lat={dropGPS.lat}
+                                                lng={dropGPS.lng}
+                                                draggable={true}
+                                            />
+                                        )}
+                                    </GoogleMapReact>
+                                </Flex>
+                            </Flex>
+                        )}
+                        {screen === 1 && (
+                            <Flex direction="column">
+                                <Flex>
+                                    <Input placeholder="First name" mr={2} />
+                                    <Input placeholder="Last name" ml={2} />
+                                </Flex>
+                                <Input placeholder="Address" mt={4} />
+                                <Flex mt={4}>
+                                    <Input placeholder="Phone Number" type="number" mr={2} />
+                                    <Input placeholder="Zipcode" type="number" ml={2} />
+                                </Flex>
+                                <Flex direction="column" mt={4} borderTop="1px" borderColor="secondary.100">
+                                    <Box mt={2} />
+                                    {cartStore.array.map((x) => {
+                                        return <CartItem key={x._id} _id={x._id} />
+                                    })}
+                                </Flex>
+                                <Flex
+                                    mt={2}
+                                    direction="column"
+                                    align="flex-end"
+                                    borderTop="1px"
+                                    borderColor="secondary.100"
+                                >
+                                    <Text mt={4}>Your Total</Text>
+                                    <Text fontWeight="bold" fontSize="2xl">
+                                        ${cartStore.totalCost}
+                                    </Text>
+                                </Flex>
+                            </Flex>
+                        )}
                     </Flex>
                 </ModalBody>
-                <ModalFooter>
-                    <Button>Continue</Button>
+                <ModalFooter mt={3} borderTop="1px" borderColor="secondary.100">
+                    {screen > 0 && (
+                        <Button onClick={() => setScreen(screen - 1)} bg="red.100" mr={4}>
+                            Back
+                        </Button>
+                    )}
+                    {screen === 0 && (
+                        <Button onClick={() => setScreen(screen + 1)} bg="primary.100" disabled={!dropGPS}>
+                            Continue
+                        </Button>
+                    )}
+                    {screen === 1 && (
+                        <Button onClick={() => {}} bg="primary.100" disabled={!cartStore.totalCost > 0}>
+                            Place Order
+                        </Button>
+                    )}
                 </ModalFooter>
             </ModalContent>
         </Modal>
