@@ -1,4 +1,5 @@
 import { makeAutoObservable, observable } from 'mobx'
+// eslint-disable-next-line no-unused-vars
 import { InventoryItem } from './inventory.store'
 // eslint-disable-next-line no-unused-vars
 import { RootStore } from './root'

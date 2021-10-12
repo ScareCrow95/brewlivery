@@ -12,7 +12,7 @@ const breakpoints = createBreakpoints({
 const colors = {
     secondary: {
         100: '#2d2d2d',
-        150: '#262626',
+        150: '#1e1d21',
         200: '#141316',
         300: '#0d0c0e',
     },

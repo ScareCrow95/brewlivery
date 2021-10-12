@@ -9,7 +9,12 @@ export class UIStore {
     root = null
 
     selectedId = 'can1'
+    selectedOrderId = ''
 
+    /**
+     * @type {('menu'|'track')}
+     */
+    mainScreen = 'menu'
     checkout = false
 
     get selected() {
@@ -19,6 +24,10 @@ export class UIStore {
     constructor(root) {
         makeAutoObservable(this)
         this.root = root
+    }
+
+    get selectedOrder() {
+        return this.root.orderStore.orders.get(this.selectedOrderId)
     }
 
     get scrollCSS() {
