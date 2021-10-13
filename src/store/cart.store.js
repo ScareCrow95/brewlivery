@@ -13,10 +13,10 @@ export class CartItem {
      */
     root = null
 
-    constructor(_id, root) {
+    constructor(_id, root, count = 1) {
         makeAutoObservable(this)
         this._id = _id
-        this.count = 1
+        this.count = count
         this.root = root
     }
     /**

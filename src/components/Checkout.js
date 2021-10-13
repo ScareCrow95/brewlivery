@@ -33,28 +33,28 @@ const Checkout = observer(() => {
     })
     const polyLine = useRef(null)
     const polyCircle = useRef(null)
-    // const [dropGPS, setDrop] = useState({ lat: 38.431654, lng: -78.875996 })
-    const [dropGPS, setDrop] = useState(null)
+    const [dropGPS, setDrop] = useState({ lat: 38.431654, lng: -78.875996 })
+    // const [dropGPS, setDrop] = useState(null)
     const [dragging, setDragging] = useState(false)
     const [far, setFar] = useState(false)
     const [distance, setDistance] = useState(0)
     const [center, setCenter] = useState(palefire)
     const [zoom, setZoom] = useState(15)
 
-    // const [info, setInfo] = useState({
-    //     first: 'Mridul',
-    //     last: 'Pareek',
-    //     address: '127 S liberty St.',
-    //     phone: '5405562335',
-    //     zipcode: '22801',
-    // })
     const [info, setInfo] = useState({
-        first: '',
-        last: '',
-        address: '',
-        phone: '',
-        zipcode: '',
+        first: 'Mridul',
+        last: 'Pareek',
+        address: '127 S liberty St.',
+        phone: '5405562335',
+        zipcode: '22801',
     })
+    // const [info, setInfo] = useState({
+    //     first: '',
+    //     last: '',
+    //     address: '',
+    //     phone: '',
+    //     zipcode: '',
+    // })
 
     const [screen, setScreen] = useState(0)
 
@@ -218,6 +218,7 @@ const Checkout = observer(() => {
                                         {dropGPS && (
                                             <DropoffIcon
                                                 key="dropoff"
+                                                far={far}
                                                 lat={dropGPS.lat}
                                                 lng={dropGPS.lng}
                                                 draggable={true}

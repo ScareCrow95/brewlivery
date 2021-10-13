@@ -1,4 +1,4 @@
-import { Badge, Box, Flex, Spacer, Text } from '@chakra-ui/react'
+import { Badge, Box, Flex, Spacer, Text, Center, Button } from '@chakra-ui/react'
 import { formatDistance, formatRelative } from 'date-fns'
 import GoogleMapReact from 'google-map-react'
 import { observer } from 'mobx-react-lite'
@@ -20,7 +20,7 @@ const TrackOrder = observer(() => {
     const [zoom, setZoom] = useState(13)
 
     useEffect(() => {
-        setCenter({ lat: selectedOrder.lat, lng: selectedOrder.lng })
+        if (selectedOrder) setCenter({ lat: selectedOrder.lat, lng: selectedOrder.lng })
     }, [uiStore.selectedOrderId])
 
     const polyLine = useRef(null)
@@ -56,7 +56,21 @@ const TrackOrder = observer(() => {
     return (
         <Flex pl={16} pt={8}>
             <Flex direction="column" w="440px" shrink={0} borderRight="1px" borderColor="secondary.100" pr={4}>
-                <Text mb={4}>Recent Orders</Text>
+                <Flex>
+                    {' '}
+                    <Text flex={1} mb={4}>
+                        Recent Orders
+                    </Text>
+                    <Button
+                        size="sm"
+                        onClick={() => {
+                            localStorage.removeItem('bl.orders')
+                            orderStore.orders.clear()
+                        }}
+                    >
+                        Clear Orders
+                    </Button>
+                </Flex>
                 <Flex direction="column" overflowY="auto" h="70vh" css={uiStore.scrollCSS}>
                     {orderStore.array.map((x) => {
                         return (
@@ -123,7 +137,7 @@ const TrackOrder = observer(() => {
                     })}
                 </Flex>
             </Flex>
-            {selectedOrder && (
+            {selectedOrder ? (
                 <Flex flex={2} direction="column">
                     <Flex w="100%" h="50vh">
                         <GoogleMapReact
@@ -142,11 +156,17 @@ const TrackOrder = observer(() => {
                             ) : (
                                 <BreweryIcon lat={palefire.lat} lng={palefire.lng} />
                             )}
+                            {selectedOrder.state !== 'delivered' && (
+                                <DropoffIcon key="dropoff" lat={selectedOrder.lat} lng={selectedOrder.lng} />
+                            )}
 
                             {(selectedOrder.state === 'shipped' || selectedOrder.state === 'delivered') && (
-                                <DroneIcon lat={38.4421179} lng={-78.8692451} />
+                                <DroneIcon
+                                    status={selectedOrder.droneStatus}
+                                    lat={selectedOrder.drone.lat}
+                                    lng={selectedOrder.drone.lng}
+                                />
                             )}
-                            <DropoffIcon key="dropoff" lat={selectedOrder.lat} lng={selectedOrder.lng} />
                         </GoogleMapReact>
                     </Flex>
                     <Flex py={2} align="center" justify="flex-start" px={2} mt={4}>
@@ -180,6 +200,12 @@ const TrackOrder = observer(() => {
                         </Flex>
                     </Flex>
                 </Flex>
+            ) : (
+                <Center flex={1}>
+                    <Text fontSize="xl" color="grey.300">
+                        Nothing Selected...
+                    </Text>
+                </Center>
             )}
         </Flex>
     )

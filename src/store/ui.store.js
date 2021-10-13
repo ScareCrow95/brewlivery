@@ -27,6 +27,8 @@ export class UIStore {
     }
 
     get selectedOrder() {
+        if (!this.selectedOrderId && this.root.orderStore.array.length > 0)
+            this.selectedOrderId = this.root.orderStore.array[0]._id
         return this.root.orderStore.orders.get(this.selectedOrderId)
     }
 
