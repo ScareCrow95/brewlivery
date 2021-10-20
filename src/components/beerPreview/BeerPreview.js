@@ -25,7 +25,7 @@ const BeerPreview = observer(() => {
 
     return (
         <Flex justify="flex-end" align="center" flex={1} overflow="hidden" mr="100px" zIndex={1}>
-            <Flex direction="column" mr="-178px" textAlign="right" align="flex-end" mt={16} zIndex={1}>
+            <Flex direction="column" mr="-148px" textAlign="right" align="flex-end" mt={16} zIndex={1}>
                 <Text fontWeight="black" fontSize="4xl">
                     {getTagElements()[0].toUpperCase()}{' '}
                     <Text as="span" color={selected.secondaryColor} bg={selected.primaryColor} px={3} py={4}>
@@ -55,15 +55,18 @@ const BeerPreview = observer(() => {
                     </Text>
                 </Flex>
             </Flex>
-            <Flex mr="-180px" h="450px" mt="130px" opacity="1" zIndex={2}>
+            <Flex mr="-20px" h="300px" mt='-80px' opacity="1" zIndex={2}>
                 <Image src={shadowLeft} className="selector" />
             </Flex>
-            <Flex h="50vh" direction="column" mt={selected.offset} shrink={0}>
-                <Image src={`/image/${selected._id}.png`} objectFit="contain" zIndex={3} className="selector" />
+            <Flex w="14vw" direction="column" mt={selected.offset} shrink={0} overflow='hidden' >
+                <Image mt='120px'  src={`/image/${selected._id}.png`} objectFit="contain" zIndex={3} className="selector" />
                 <Image
                     src={canShadow}
-                    mt="-70px"
-                    ml="50px"
+                    position="absolute"
+                    top='74.1%'
+                    mt="-20px"
+                    ml="-40px"
+                    w='300px'
                     zIndex={2}
                     css={{ transform: 'scale(1.5)' }}
                     className="selector"
@@ -72,14 +75,14 @@ const BeerPreview = observer(() => {
                     src={`/image/${selected._id}.png`}
                     zIndex={1}
                     className="mask-img selector"
-                    mt="-100px"
+                    mt="-200px"
                     objectFit="contain"
                 />
                 <Flex>
                     <Box
                         w="430px"
                         h="500px"
-                        ml="100px"
+                        ml="-30px"
                         position="absolute"
                         zIndex={1}
                         bg={selected.primaryColor}
@@ -89,8 +92,8 @@ const BeerPreview = observer(() => {
                     <Box
                         w="430px"
                         h="500px"
-                        ml="170px"
-                        mt="20px"
+                        ml="10px"
+                        mt="-10px"
                         position="absolute"
                         zIndex={1}
                         bg={selected.primaryColor}
@@ -111,7 +114,7 @@ const BeerPreview = observer(() => {
                     <Text
                         position="absolute"
                         zIndex={2}
-                        ml="370px"
+                        ml="270px"
                         top="90px"
                         fontWeight="black"
                         fontSize="4xl"
@@ -119,7 +122,7 @@ const BeerPreview = observer(() => {
                     >
                         {selected.cost}
                     </Text>
-                    <Flex
+                    {/* <Flex
                         position="absolute"
                         zIndex={2}
                         ml="320px"
@@ -127,10 +130,10 @@ const BeerPreview = observer(() => {
                         style={{ transform: 'rotate(130deg) scale(1.2)' }}
                     >
                         <Image src={shadowLeft} />
-                    </Flex>
+                    </Flex> */}
                 </Flex>
             </Flex>
-            <Flex ml="-106px" direction="column" mt="120px" justify="flex-end" zIndex={2}>
+            <Flex ml="-2px" direction="column" mt="120px" justify="flex-end" zIndex={2}>
                 <Text maxW="300px" bg="black" p={3} pl={5}>
                     {selected.description1}
                 </Text>
