@@ -24,8 +24,8 @@ const BeerPreview = observer(() => {
     }
 
     return (
-        <Flex justify="flex-end" align="center" flex={1} overflow="hidden" mr="100px" zIndex={1}>
-            <Flex direction="column" mr="-148px" textAlign="right" align="flex-end" mt={16} zIndex={1}>
+        <Flex justify="flex-end" align="center" flex={1} overflow="hidden" mr="100px" zIndex={1} ove>
+            <Flex direction="column" mr="-148px" textAlign="right" align="flex-end" mt="-20px" zIndex={1}>
                 <Text fontWeight="black" fontSize="4xl">
                     {getTagElements()[0].toUpperCase()}{' '}
                     <Text as="span" color={selected.secondaryColor} bg={selected.primaryColor} px={3} py={4}>
@@ -55,30 +55,44 @@ const BeerPreview = observer(() => {
                     </Text>
                 </Flex>
             </Flex>
-            <Flex mr="-20px" h="300px" mt='-80px' opacity="1" zIndex={2}>
+            <Flex mr="-20px" h="300px" mt="-80px" opacity="1" zIndex={2}>
                 <Image src={shadowLeft} className="selector" />
             </Flex>
-            <Flex w="14vw" direction="column" mt={selected.offset} shrink={0} overflow='hidden' >
-                <Image mt='120px'  src={`/image/${selected._id}.png`} objectFit="contain" zIndex={3} className="selector" />
+            <Flex maxW="200px" minW="200px" direction="column" mt={selected.offset} shrink={0}>
                 <Image
-                    src={canShadow}
-                    position="absolute"
-                    top='74.1%'
-                    mt="-20px"
-                    ml="-40px"
-                    w='300px'
-                    zIndex={2}
-                    css={{ transform: 'scale(1.5)' }}
+                    mt="120px"
+                    src={`/image/${selected._id}.png`}
+                    objectFit="contain"
+                    shrink={0}
+                    maxW="200px"
+                    minW="200px"
+                    zIndex={3}
                     className="selector"
                 />
                 <Image
-                    src={`/image/${selected._id}.png`}
-                    zIndex={1}
-                    className="mask-img selector"
-                    mt="-200px"
-                    objectFit="contain"
+                    src={canShadow}
+                    top="74.1%"
+                    mt="-30px"
+                    ml="18px"
+                    maxW="200px"
+                    opacity=".8"
+                    minW="200px"
+                    zIndex={2}
+                    css={{ transform: 'scale(2.5)' }}
+                    className="selector"
                 />
-                <Flex>
+                <Box overflow="hidden" h={40} mt={-3}>
+                    <Image
+                        src={`/image/${selected._id}.png`}
+                        zIndex={1}
+                        maxW="200px"
+                        minW="200px"
+                        className="mask-img selector"
+                        mt="-40px"
+                        objectFit="contain"
+                    />
+                </Box>
+                <Flex overflow="hidden">
                     <Box
                         w="430px"
                         h="500px"
@@ -122,18 +136,9 @@ const BeerPreview = observer(() => {
                     >
                         {selected.cost}
                     </Text>
-                    {/* <Flex
-                        position="absolute"
-                        zIndex={2}
-                        ml="320px"
-                        top="160px"
-                        style={{ transform: 'rotate(130deg) scale(1.2)' }}
-                    >
-                        <Image src={shadowLeft} />
-                    </Flex> */}
                 </Flex>
             </Flex>
-            <Flex ml="-2px" direction="column" mt="120px" justify="flex-end" zIndex={2}>
+            <Flex direction="column" mt="-20px" zIndex={2}>
                 <Text maxW="300px" bg="black" p={3} pl={5}>
                     {selected.description1}
                 </Text>
